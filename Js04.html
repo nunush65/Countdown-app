@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>Countdown Manager</title>
+  <style>
+    body {
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      padding: 20px;
+      background: #1A3D63;
+      color: #B3CFE5;
+    }
+    h2{
+     text-align:center;
+    }
+    #title{
+        width : 200px;
+        height : 20px;
+        padding : 5px;
+        margin: 5px;
+        background:#d7dcf1;
+        border: none;
+        border: 3px solid black;
+        outline-color: #6fa4dd;
+    }
+    #date{
+        width : 200px;
+        height : 20px;
+        padding : 5px;
+        background:#d7dcf1;
+         border: 3px solid black;
+         outline-color: #6297c0;
+    }
+    #addbtn{
+        background : #253753;
+        border:none;
+        padding :5px;
+        height:35px;
+        color:white;
+         border: 3px solid black;
+    }
+    #addbtn:hover{
+       background-color: #6fa4dd;
+       border-color: #B3CFE5;
+    }
+    #countdownForm{
+      text-align: center;
+      align-items: center;
+    }
+    .mainContainer,.countdownListContainer{
+      display:flex ;
+      justify-content: center;
+    }
+    .mainCountdown{
+        background :#0A1931;
+        width :300px;
+        height :auto;
+        padding : 5px;
+        margin:20px;
+        text-transform: uppercase;
+        border-radius:5px;
+    }
+    .mainCountdown,li{
+     
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    h3,.mainCountdown p{
+      text-align: center;
+    }
+    .countdownLists{
+      width: 700px;
+      background-color: #0A1931;
+      height: auto;
+      border-radius: 8px;
+    }
+    #countdownList{
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 30px;
+    }
+    .active  {
+      background: #4A7FA7;
+      color: aliceblue;
+       cursor: pointer;
+      margin: 10px 0;
+      padding: 15px 15px; 
+      max-width: 200px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(233, 230, 230, 0.1);
+      transition: transform 0.2s ease,box-shadow 0.2s ease;
+    }
+    .active .editbtn,.active .deletebtn,.active .savebtn{
+     background: none;
+     position: relative;
+     bottom: -15px;
+      color: aliceblue;
+      padding: 5px;
+      margin: 9px;
+      font-size: 15px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      text-align: center;
+    }
+    li {
+      
+      cursor: pointer;
+      margin: 10px 0;
+      padding: 15px 15px;
+      width: fit-content;
+      max-width: 200px;
+      background: #253753;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(233, 230, 230, 0.1);
+      transition: transform 0.2s ease,box-shadow 0.2s ease;
+    }
+    li:hover{
+      transform: translateY(-8px);
+      box-shadow: 0 0 20px #384858,0 0 40px #2b3947;
+      background-color: #6fa4dd;
+    }
+    .savebtn{
+      color: #faf9f8;
+      background-color: #6297c0;
+      border: none;
+      border-radius: 8px;
+      background: none;
+      position: relative;
+      bottom: -40px;
+      right: 40%;
+      font-size: 20px;
+    }
+    .active .savebtn{
+      color: #faf9f8;
+      background-color: #6297c0;
+      border: none;
+      border-radius: 8px;
+      background: none;
+      position: relative;
+      bottom: -40px;
+      right: 40%;
+      font-size: 20px;
+    }
+    .deletebtn,.editbtn{
+      font-size: 15px;
+      position: relative;
+      bottom: -15px; 
+      color: #070808;
+      background: none;
+      border: none;
+      border-radius: 15px;
+      padding: 5px;
+      margin:9px 3px;
+    }
+    .deletebtn:hover,.editbtn:hover,.savebtn:hover{
+      background-color: #222424;
+      color: aliceblue;
+      border-radius: 0;
+    }
+    .expired {
+      color: red;
+      font-weight: bold;
+    }
+    
+  </style>
+</head>
+<body>
+
+  <h2>Countdown Manager</h2>
+
+ 
+  <form id="countdownForm">
+    <input type="text" id="title" placeholder="Add Your Title" required>
+    <input type="date" id="date" required>
+    <button type="submit" id="addbtn">Add</button>
+  </form>
+
+
+<div class="mainContainer">
+  <div class="mainCountdown">
+      <h3 id="mainTitle">Default Countdown</h3>
+      <p id="countdownDisplay">Loading...</p>
+  </div>
+</div>
+
+<div class="countdownListContainer">
+    <div class="countdownLists">
+         <ul id="countdownList"></ul>
+   
+     </div>
+
+</div>
+  
+
+<script>
+const list = document.getElementById('countdownList');
+const mainTitle = document.getElementById('mainTitle');
+const countdownDisplay = document.getElementById('countdownDisplay');
+
+let countdowns = JSON.parse(localStorage.getItem('countdowns')) || [
+  { title: 'My Birthday', date: '2025-10-10' }
+];
+
+let activeIndex = 0;
+
+function saveCountdowns() {
+  localStorage.setItem('countdowns', JSON.stringify(countdowns));
+}
+
+// const timeleft = document.createElement('span')
+// timeleft.style.color="white";
+// li.appendChild(timeleft);
+
+function calculateCountdown(date) {
+  const now = new Date();
+  const eventDate = new Date(date);
+  const diff = eventDate - now;
+
+  if (diff <= 0){
+    // timeleft.textContent= "times up";
+    // timeleft.style.color= "red";
+     return `expired`;
+  } 
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const mins = Math.floor((diff / (1000 * 60)) % 60);
+  const secs = Math.floor((diff / (1000)) % 60);     
+  return`${days} day ${hours} hour ${mins} min ${secs} sec`;
+
+}
+ 
+function displayCountdown(index) {
+  const countdown = countdowns[index];
+  mainTitle.textContent = countdown.title;
+  countdownDisplay.textContent = calculateCountdown(countdown.date);
+  updateActiveHighlight(index);
+}
+// displayCountdown();
+//  const interval = setInterval(() => {
+//   displayCountdown();
+  
+//  })
+
+function updateActiveHighlight(index) {
+  [...list.children].forEach((li, i) => {
+    li.className = (i === index) ? 'active' : '';
+  });
+}
+
+function renderList() {
+  list.innerHTML = '';
+  countdowns.forEach((c, i) => {
+    const li = document.createElement('li');
+
+    const contentSpan = document.createElement('span');
+    contentSpan.className ="content"
+    contentSpan.innerHTML = `<div style="color:white; padding:9px;">${c.title} </div>
+     <div> ${c.date}</div>`;
+    li.appendChild(contentSpan);
+
+    // Edit Button
+    const editBtn = document.createElement('button');
+    editBtn.className = 'editbtn';
+    editBtn.innerHTML = '<i class="fas fa-pen"></i> ';
+    editBtn.style.marginLeft = '10px';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+
+      // Replace text with input fields
+      const titleInput = document.createElement('input');
+      titleInput.value = c.title;
+      titleInput.style.width = '90px';
+     
+
+      const dateInput = document.createElement('input');
+      dateInput.type = 'date';
+      dateInput.value = c.date;
+      dateInput.style.margin = '2px';
+       dateInput.style.marginBottom = '30px';
+      dateInput.style.marginLeft = '30px';
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className='savebtn';
+      saveBtn.innerHTML = '<i class="fas fa-save"></i>';
+      saveBtn.style.marginLeft = '5px';
+
+      // Clear and append input fields
+      li.innerHTML = '';
+      li.appendChild(titleInput);
+      li.appendChild(dateInput);
+      li.appendChild(saveBtn);
+
+      // Save edited values
+      saveBtn.addEventListener('click', () => {
+        const newTitle = titleInput.value.trim();
+        const newDate = dateInput.value;
+        if (!newTitle || !newDate) return;
+
+        countdowns[i] = { title: newTitle, date: newDate };
+        saveCountdowns();
+        renderList();
+      });
+    });
+    li.appendChild(editBtn);
+
+    // Delete Button
+    const delBtn = document.createElement('button');
+    delBtn.className ='deletebtn';
+    delBtn.innerHTML = ' <i class="fas fa-trash"></i>';
+    delBtn.style.marginLeft = '5px';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      countdowns.splice(i, 1);
+      if (activeIndex === i) {
+        activeIndex = 0;
+      } else if (i < activeIndex) {
+        activeIndex--;
+      }
+      renderList();
+    });
+    li.appendChild(delBtn);
+
+    // Click to set active countdown
+    li.addEventListener('click', () => {
+      activeIndex = i;
+      displayCountdown(i);
+    });
+
+    list.appendChild(li);
+  });
+
+  displayCountdown(activeIndex);
+  saveCountdowns();
+}
+
+// Add form functionality for new countdowns only
+document.getElementById('countdownForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const title = document.getElementById('title').value.trim();
+  const date = document.getElementById('date').value;
+
+  if (!title || !date) return;
+
+  countdowns.push({ title, date });
+  document.getElementById('title').value = '';
+  document.getElementById('date').value = '';
+  renderList();
+});
+
+renderList();
+</script>
+
+</body>
+</html>
